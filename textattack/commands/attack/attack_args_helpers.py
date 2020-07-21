@@ -395,6 +395,7 @@ def parse_dataset_from_args(args):
             raise AttributeError(
                 f"``dataset`` not found in module {args.dataset_from_file}"
             )
+        dataset.setup(num_examples_offset=args.num_examples_offset, shuffle=args.shuffle)
     elif args.dataset_from_nlp:
         dataset_args = args.dataset_from_nlp
         if isinstance(dataset_args, str):

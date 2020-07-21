@@ -41,7 +41,7 @@ class AugmentCommand(TextAttackCommand):
         # Read in CSV file as a list of dictionaries. Use the CSV sniffer to
         # try and automatically infer the correct CSV format.
         csv_file = open(args.csv, "r")
-        dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters=";,")
+        dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters=";,\t")
         csv_file.seek(0)
         rows = [
             row
@@ -57,7 +57,15 @@ class AugmentCommand(TextAttackCommand):
             f"Read {len(rows)} rows from {args.csv}. Found columns {row_keys}."
         )
 
-        augmenter = eval(AUGMENTATION_RECIPE_NAMES[args.recipe])(
+        if args.recipe in AUGMENTATION_RECIPE_NAMES:
+            augmenter_cls = eval(AUGMENTATION_RECIPE_NAMES[args.recipe])
+        else:
+            assert ":" in args.recipe
+            augmenter_module, augmenter_name = args.recipe.split(":")
+            import importlib
+            augmenter_cls = getattr(importlib.import_module(augmenter_module), augmenter_name)
+
+        augmenter = augmenter_cls(
             pct_words_to_swap=args.pct_words_to_swap,
             transformations_per_example=args.transformations_per_example,
         )
@@ -74,7 +82,7 @@ class AugmentCommand(TextAttackCommand):
         # Print to file.
         with open(args.outfile, "w") as outfile:
             csv_writer = csv.writer(
-                outfile, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
+                outfile, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL
             )
             # Write header.
             csv_writer.writerow(output_rows[0].keys())
@@ -108,7 +116,6 @@ class AugmentCommand(TextAttackCommand):
             help="recipe for augmentation",
             type=str,
             default="embedding",
-            choices=AUGMENTATION_RECIPE_NAMES.keys(),
         )
         parser.add_argument(
             "--pct-words-to-swap",

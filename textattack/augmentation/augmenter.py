@@ -96,7 +96,8 @@ class Augmenter:
                 words_swapped += 1
                 if words_swapped == num_words_to_swap:
                     break
-            all_transformed_texts.add(current_text)
+            if words_swapped > 0:
+                all_transformed_texts.add(current_text)
         return sorted([at.printable_text() for at in all_transformed_texts])
 
     def augment_many(self, text_list, show_progress=False):
