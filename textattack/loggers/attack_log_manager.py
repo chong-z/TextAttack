@@ -54,11 +54,11 @@ class AttackLogManager:
         for logger in self.loggers:
             logger.flush()
 
-    def log_attack_details(self, attack_name, model_name):
+    def log_attack_details(self, attack, model_name):
         # @TODO log a more complete set of attack details
         attack_detail_rows = [
-            ["Attack algorithm:", attack_name],
-            ["Model:", model_name],
+            ["Attack algorithm:", str(attack)],
+            ["Model name:", model_name],
         ]
         self.log_summary_rows(attack_detail_rows, "Attack Details", "attack_details")
 
@@ -68,6 +68,9 @@ class AttackLogManager:
             return
         # Count things about attacks.
         all_num_words = np.zeros(len(self.results))
+        sum_failed_score = 0.0
+        sum_successful_score = 0.0
+        perturbed_word_counts = np.zeros(len(self.results))
         perturbed_word_percentages = np.zeros(len(self.results))
         num_words_changed_until_success = np.zeros(
             2 ** 16
@@ -80,12 +83,14 @@ class AttackLogManager:
             all_num_words[i] = len(result.original_result.attacked_text.words)
             if isinstance(result, FailedAttackResult):
                 failed_attacks += 1
+                sum_failed_score += result.perturbed_result.score
                 continue
             elif isinstance(result, SkippedAttackResult):
                 skipped_attacks += 1
                 continue
             else:
                 successful_attacks += 1
+                sum_successful_score += result.perturbed_result.score
             num_words_changed = len(
                 result.original_result.attacked_text.all_words_diff(
                     result.perturbed_result.attacked_text
@@ -103,6 +108,7 @@ class AttackLogManager:
                 )
             else:
                 perturbed_word_percentage = 0
+            perturbed_word_counts[i] = num_words_changed
             perturbed_word_percentages[i] = perturbed_word_percentage
 
         # Original classifier success rate on these samples.
@@ -122,10 +128,17 @@ class AttackLogManager:
             )
         attack_success_rate = str(round(attack_success_rate, 2)) + "%"
 
+        average_failed_score = "N/A" if failed_attacks == 0 else sum_failed_score / failed_attacks
+        average_failed_score = str(round(average_failed_score, 4))
+
+        average_successful_score = "N/A" if successful_attacks == 0 else sum_successful_score / successful_attacks
+        average_successful_score = str(round(average_successful_score, 4))
+
         perturbed_word_percentages = perturbed_word_percentages[
             perturbed_word_percentages > 0
         ]
-        average_perc_words_perturbed = perturbed_word_percentages.mean()
+        average_count_words_perturbed = str(round(perturbed_word_counts.mean(), 2))
+        average_perc_words_perturbed = perturbed_word_percentages.mean() if len(perturbed_word_percentages) > 0 else "N/A"
         average_perc_words_perturbed = str(round(average_perc_words_perturbed, 2)) + "%"
 
         average_num_words = all_num_words.mean()
@@ -138,6 +151,9 @@ class AttackLogManager:
             ["Original accuracy:", original_accuracy],
             ["Accuracy under attack:", accuracy_under_attack],
             ["Attack success rate:", attack_success_rate],
+            ["Average successful score:", average_successful_score],
+            ["Average failed score:", average_failed_score],
+            ["Average perturbed word #:", average_count_words_perturbed],
             ["Average perturbed word %:", average_perc_words_perturbed],
             ["Average num. words per input:", average_num_words],
         ]

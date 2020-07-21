@@ -11,6 +11,7 @@ from .attack_args_helpers import (
     parse_attack_from_args,
     parse_dataset_from_args,
     parse_logger_from_args,
+    parse_model_from_args,
 )
 
 logger = textattack.shared.logger
@@ -44,7 +45,8 @@ def run(args, checkpoint=None):
     start_time = time.time()
 
     # Attack
-    attack = parse_attack_from_args(args)
+    model, model_name_for_logging = parse_model_from_args(args)
+    attack = parse_attack_from_args(args=args, model=model)
     print(attack, "\n")
 
     # Logger
@@ -136,6 +138,7 @@ def run(args, checkpoint=None):
         # Enable summary stdout
         if args.disable_stdout:
             attack_log_manager.enable_stdout()
+        attack_log_manager.log_attack_details(attack=attack, model_name=model_name_for_logging)
         attack_log_manager.log_summary()
         attack_log_manager.flush()
         print()

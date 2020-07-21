@@ -186,8 +186,7 @@ def parse_constraints_from_args(args):
     return _constraints
 
 
-def parse_attack_from_args(args):
-    model = parse_model_from_args(args)
+def parse_attack_from_args(args, model):
     if args.recipe:
         if ":" in args.recipe:
             recipe_name, params = args.recipe.split(":")
@@ -271,6 +270,7 @@ def parse_model_from_args(args):
             )
         model = model.to(textattack.shared.utils.device)
         setattr(model, "tokenizer", tokenizer)
+        model_name_for_logging = f"model_from_file:{args.model_from_file}"
     elif (args.model in HUGGINGFACE_DATASET_BY_MODEL) or args.model_from_huggingface:
         import transformers
 
@@ -304,12 +304,14 @@ def parse_model_from_args(args):
             )
             tokenizer = textattack.models.tokenizers.AutoTokenizer("bert-base-uncased")
         setattr(model, "tokenizer", tokenizer)
+        model_name_for_logging = f"model_from_huggingface:{model_name}"
     else:
         if args.model in TEXTATTACK_DATASET_BY_MODEL:
             model_path, _ = TEXTATTACK_DATASET_BY_MODEL[args.model]
             model = textattack.shared.utils.load_textattack_model_from_path(
                 args.model, model_path
             )
+            model_name_for_logging = f"model_from_textattack:{args.model}"
         elif args.model and os.path.exists(args.model):
             # If `args.model` is a path/directory, let's assume it was a model
             # trained with textattack, and try and load it.
@@ -332,9 +334,10 @@ def parse_model_from_args(args):
                 num_labels,
                 model_path=args.model,
             )
+            model_name_for_logging = f"model_trained_with_textattack:{args.model}"
         else:
             raise ValueError(f"Error: unsupported TextAttack model {args.model}")
-    return model
+    return model, model_name_for_logging
 
 
 def parse_dataset_from_args(args):

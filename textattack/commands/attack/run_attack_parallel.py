@@ -12,6 +12,7 @@ from .attack_args_helpers import (
     parse_attack_from_args,
     parse_dataset_from_args,
     parse_logger_from_args,
+    parse_model_from_args,
 )
 
 logger = textattack.shared.logger
@@ -35,7 +36,8 @@ def set_env_variables(gpu_id):
 def attack_from_queue(args, in_queue, out_queue):
     gpu_id = torch.multiprocessing.current_process()._identity[0] - 2
     set_env_variables(gpu_id)
-    attack = parse_attack_from_args(args)
+    model, model_name_for_logging = parse_model_from_args(args)
+    attack = parse_attack_from_args(args=args, model=model)
     if gpu_id == 0:
         print(attack, "\n")
     while not in_queue.empty():
