@@ -14,7 +14,7 @@ scipy==1.4.1
 sentence_transformers>0.2.6
 torch
 transformers==3.0.2
-tensorflow>=2
+# tensorflow>=2
 tensorflow_hub
 tensorboardX
 terminaltables
