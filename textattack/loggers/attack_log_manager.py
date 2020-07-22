@@ -1,6 +1,6 @@
 import numpy as np
 
-from textattack.attack_results import FailedAttackResult, SkippedAttackResult
+from textattack.attack_results import FailedAttackResult, SkippedAttackResult, SuccessfulAttackResult
 
 from . import CSVLogger, FileLogger, VisdomLogger, WeightsAndBiasesLogger
 
@@ -61,6 +61,35 @@ class AttackLogManager:
             ["Model name:", model_name],
         ]
         self.log_summary_rows(attack_detail_rows, "Attack Details", "attack_details")
+
+    def log_extra_stats(self):
+        from collections import defaultdict
+        extra_stats_dict = {
+            "Original Failed": defaultdict(list),
+            "Original Successful": defaultdict(list),
+            "Perturbed Failed": defaultdict(list),
+            "Perturbed Successful": defaultdict(list),
+        }
+
+        for i, result in enumerate(self.results):
+            if isinstance(result, FailedAttackResult):
+                result_type = "Failed"
+            elif isinstance(result, SuccessfulAttackResult):
+                result_type = "Successful"
+            else:
+                continue
+            if hasattr(result.original_result, "fill_extra_stats"):
+                result.original_result.fill_extra_stats(extra_stats_dict[f"Original {result_type}"])
+            if hasattr(result.perturbed_result, "fill_extra_stats"):
+                result.perturbed_result.fill_extra_stats(extra_stats_dict[f"Perturbed {result_type}"])
+
+        extra_stats_rows = []
+        for result_type, result_dict in extra_stats_dict.items():
+            for stats_name, stats_list in result_dict.items():
+                avg_value = str(round(np.mean(stats_list), 6))
+                extra_stats_rows.append([*result_type.split(), f"Average {stats_name}", avg_value])
+
+        self.log_summary_rows(extra_stats_rows, "Extra Stats", "extra_stats")
 
     def log_summary(self):
         total_attacks = len(self.results)

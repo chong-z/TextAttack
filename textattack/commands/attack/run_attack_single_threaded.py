@@ -139,6 +139,7 @@ def run(args, checkpoint=None):
         if args.disable_stdout:
             attack_log_manager.enable_stdout()
         attack_log_manager.log_attack_details(attack=attack, model_name=model_name_for_logging)
+        attack_log_manager.log_extra_stats()
         attack_log_manager.log_summary()
         attack_log_manager.flush()
         print()
