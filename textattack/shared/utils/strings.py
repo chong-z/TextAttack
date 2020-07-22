@@ -24,17 +24,18 @@ def add_indent(s_, numSpaces):
 
 
 def words_from_text(s, words_to_ignore=[]):
+    words_to_ignore = words_to_ignore + ["'"]
     """Lowercases a string, removes all non-alphanumeric characters, and splits
     into words."""
     # TODO implement w regex
     words = []
     word = ""
     for c in " ".join(s.split()):
-        if c.isalnum():
+        if c.isalnum() or c in "'":
+            # Allow words with apostrophes such as 's.
             word += c
-        elif c in "'-" and len(word) > 0:
-            # Allow apostrophes and hyphens as long as they don't begin the
-            # word.
+        elif c in "-" and len(word) > 0:
+            # Allow hyphens as long as they don't begin the word.
             word += c
         elif word:
             if word not in words_to_ignore:
