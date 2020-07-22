@@ -128,17 +128,17 @@ class AttackLogManager:
             )
         attack_success_rate = str(round(attack_success_rate, 2)) + "%"
 
-        average_failed_score = "N/A" if failed_attacks == 0 else sum_failed_score / failed_attacks
+        average_failed_score = 0 if failed_attacks == 0 else sum_failed_score / failed_attacks
         average_failed_score = str(round(average_failed_score, 4))
 
-        average_successful_score = "N/A" if successful_attacks == 0 else sum_successful_score / successful_attacks
+        average_successful_score = 0 if successful_attacks == 0 else sum_successful_score / successful_attacks
         average_successful_score = str(round(average_successful_score, 4))
 
         perturbed_word_percentages = perturbed_word_percentages[
             perturbed_word_percentages > 0
         ]
         average_count_words_perturbed = str(round(perturbed_word_counts.mean(), 2))
-        average_perc_words_perturbed = perturbed_word_percentages.mean() if len(perturbed_word_percentages) > 0 else "N/A"
+        average_perc_words_perturbed = perturbed_word_percentages.mean() if len(perturbed_word_percentages) > 0 else 0
         average_perc_words_perturbed = str(round(average_perc_words_perturbed, 2)) + "%"
 
         average_num_words = all_num_words.mean()
