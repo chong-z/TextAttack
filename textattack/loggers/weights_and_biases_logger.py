@@ -21,12 +21,15 @@ class WeightsAndBiasesLogger(Logger):
         wandb.init(project="textattack", resume=True)
 
     def log_summary_rows(self, rows, title, window_id):
-        table = wandb.Table(columns=["Attack Results", ""])
+        num_columns = len(rows[0])
+        table = wandb.Table(columns=[title] + [f"C{i}" for i in range(1, num_columns)])
         for row in rows:
             table.add_data(*row)
-            metric_name, metric_score = row
-            wandb.run.summary[metric_name] = metric_score
-        wandb.log({"attack_params": table})
+        wandb.log({window_id: table})
+        if num_columns == 2:
+            for row in rows:
+                metric_name, metric_score = row
+                wandb.run.summary[metric_name] = metric_score
 
     def _log_result_table(self):
         """Weights & Biases doesn't have a feature to automatically aggregate

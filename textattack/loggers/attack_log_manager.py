@@ -87,9 +87,9 @@ class AttackLogManager:
         for result_type, result_dict in extra_stats_dict.items():
             for stats_name, stats_list in result_dict.items():
                 avg_value = str(round(np.mean(stats_list), 6))
-                extra_stats_rows.append([*result_type.split(), f"Average {stats_name}", avg_value])
-
-        self.log_summary_rows(extra_stats_rows, "Extra Stats", "extra_stats")
+                extra_stats_rows.append([f"Average {stats_name} ({result_type})", avg_value])
+        if len(extra_stats_rows) > 0:
+            self.log_summary_rows(extra_stats_rows, f"Extra Stats", "extra_stats")
 
     def log_summary(self):
         total_attacks = len(self.results)
