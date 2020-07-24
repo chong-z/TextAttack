@@ -417,7 +417,7 @@ def parse_dataset_from_args(args):
 
 def parse_logger_from_args(args):
     # Create logger
-    attack_log_manager = textattack.loggers.AttackLogManager()
+    attack_log_manager = textattack.loggers.AttackLogManager(args)
     out_time = int(time.time() * 1000)  # Output file
     # Set default output directory to `textattack/outputs`.
     if not args.out_dir:

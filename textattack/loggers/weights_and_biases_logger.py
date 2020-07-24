@@ -7,29 +7,28 @@ class WeightsAndBiasesLogger(Logger):
     """Logs attack results to Weights & Biases."""
 
     def __init__(self, filename="", stdout=False):
-        global wandb
-        import wandb
-
-        wandb.init(project="textattack", resume=True)
+        self.init_wandb()
         self._result_table_rows = []
 
     def __setstate__(self, state):
-        global wandb
-        import wandb
-
         self.__dict__ = state
-        wandb.init(project="textattack", resume=True)
+        self.init_wandb()
+
+    def init_wandb(self):
+        import wandb
+        self.wandb = wandb
+        self.wandb.init(project="textattack", resume=True)
 
     def log_summary_rows(self, rows, title, window_id):
         num_columns = len(rows[0])
-        table = wandb.Table(columns=[title] + [f"C{i}" for i in range(1, num_columns)])
+        table = self.wandb.Table(columns=[title] + [f"C{i}" for i in range(1, num_columns)])
         for row in rows:
             table.add_data(*row)
-        wandb.log({window_id: table})
+        self.wandb.log({window_id: table})
         if num_columns == 2:
             for row in rows:
                 metric_name, metric_score = row
-                wandb.run.summary[metric_name] = metric_score
+                self.wandb.run.summary[metric_name] = metric_score
 
     def _log_result_table(self):
         """Weights & Biases doesn't have a feature to automatically aggregate
@@ -40,7 +39,7 @@ class WeightsAndBiasesLogger(Logger):
         result_table = html_table_from_rows(
             self._result_table_rows, header=["", "Original Input", "Perturbed Input"]
         )
-        wandb.log({"results": wandb.Html(result_table)})
+        self.wandb.log({"results": self.wandb.Html(result_table)})
 
     def log_attack_result(self, result):
         original_text_colored, perturbed_text_colored = result.diff_color(
@@ -57,8 +56,8 @@ class WeightsAndBiasesLogger(Logger):
         result_diff_table = html_table_from_rows(
             [[original_text_colored, perturbed_text_colored]]
         )
-        result_diff_table = wandb.Html(result_diff_table)
-        wandb.log(
+        result_diff_table = self.wandb.Html(result_diff_table)
+        self.wandb.log(
             {
                 "result": result_diff_table,
                 "original_output": result.original_result.output,

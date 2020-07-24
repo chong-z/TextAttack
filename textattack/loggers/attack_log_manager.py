@@ -10,7 +10,7 @@ from . import CSVLogger, FileLogger, VisdomLogger, WeightsAndBiasesLogger
 class AttackLogManager:
     """Logs the results of an attack to all attached loggers."""
 
-    def __init__(self):
+    def __init__(self, args=None):
         self.loggers = []
         self.results = []
 
