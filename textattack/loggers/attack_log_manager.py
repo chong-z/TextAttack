@@ -54,11 +54,10 @@ class AttackLogManager:
         for logger in self.loggers:
             logger.flush()
 
-    def log_attack_details(self, attack, model_name):
+    def log_attack_details(self, attack, model):
         # @TODO log a more complete set of attack details
         attack_detail_rows = [
             ["Attack algorithm:", str(attack)],
-            ["Model name:", model_name],
         ]
         self.log_summary_rows(attack_detail_rows, "Attack Details", "attack_details")
 

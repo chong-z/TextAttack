@@ -45,7 +45,7 @@ def run(args, checkpoint=None):
     start_time = time.time()
 
     # Attack
-    model, model_name_for_logging = parse_model_from_args(args)
+    model = parse_model_from_args(args)
     attack = parse_attack_from_args(args=args, model=model)
     print(attack, "\n")
 
@@ -138,7 +138,7 @@ def run(args, checkpoint=None):
         # Enable summary stdout
         if args.disable_stdout:
             attack_log_manager.enable_stdout()
-        attack_log_manager.log_attack_details(attack=attack, model_name=model_name_for_logging)
+        attack_log_manager.log_attack_details(attack=attack, model=model)
         attack_log_manager.log_extra_stats()
         attack_log_manager.log_summary()
         attack_log_manager.flush()
