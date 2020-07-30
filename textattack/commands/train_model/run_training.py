@@ -162,7 +162,10 @@ def _get_eval_score(model, eval_dataloader, do_regression):
         with torch.no_grad():
             batch_logits = textattack.shared.utils.model_predict(model, input_ids)
 
-        logits.extend(batch_logits.cpu().squeeze().tolist())
+        # |squeeze()| removes batch dimension of size 1.
+        # https://pytorch.org/docs/master/generated/torch.squeeze.html
+        logits.extend(batch_logits.cpu().tolist())
+        # logits.extend(batch_logits.cpu().squeeze().tolist())
         labels.extend(batch_labels)
 
     model.train()
