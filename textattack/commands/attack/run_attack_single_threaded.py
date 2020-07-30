@@ -1,5 +1,5 @@
 """A command line parser to run an attack from user specifications."""
-from collections import deque
+from collections import deque, OrderedDict
 import os
 import time
 
@@ -73,6 +73,9 @@ def run(args, checkpoint=None):
                 continue
 
             print("Attacking...")
+            if '#' in text:
+                text = text.split('#')
+                text = OrderedDict([(f'text{i}', text[i].strip()) for i in range(len(text))])
 
             attacked_text = textattack.shared.attacked_text.AttackedText(text)
             initial_result = attack.goal_function.get_output(attacked_text)
