@@ -298,10 +298,24 @@ def parse_model_from_args(args):
         try:
             tokenizer = textattack.models.tokenizers.AutoTokenizer(model_name)
         except OSError:
-            textattack.shared.logger.warn(
-                f"AutoTokenizer {args.model_from_huggingface} not found. Defaulting to `bert-base-uncased`"
-            )
-            tokenizer = textattack.models.tokenizers.AutoTokenizer("bert-base-uncased")
+            if 'checkpoint' in model_name:
+                tokenizer_path = os.path.split(model_name)[0]
+                textattack.shared.logger.warn(
+                    f"AutoTokenizer {model_name} not found, might be a checkpoint. Trying {tokenizer_path}"
+                )
+                try:
+                    tokenizer = textattack.models.tokenizers.AutoTokenizer(tokenizer_path)
+                except OSError:
+                    tokenizer = None
+                    textattack.shared.logger.warn(
+                        f"AutoTokenizer {tokenizer_path} not found."
+                    )
+
+            if tokenizer is None:
+                textattack.shared.logger.warn(
+                    f"AutoTokenizer {model_name} not found. Defaulting to `bert-base-uncased`"
+                )
+                tokenizer = textattack.models.tokenizers.AutoTokenizer("bert-base-uncased")
         setattr(model, "tokenizer", tokenizer)
     else:
         if args.model in TEXTATTACK_DATASET_BY_MODEL:
