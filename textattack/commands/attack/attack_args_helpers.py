@@ -339,39 +339,40 @@ def parse_model_from_args(args):
 def parse_dataset_from_args(args):
     # Automatically detect dataset for huggingface & textattack models.
     # This allows us to use the --model shortcut without specifying a dataset.
-    if args.model in HUGGINGFACE_DATASET_BY_MODEL:
-        _, args.dataset_from_nlp = HUGGINGFACE_DATASET_BY_MODEL[args.model]
-    elif args.model in TEXTATTACK_DATASET_BY_MODEL:
-        _, dataset = TEXTATTACK_DATASET_BY_MODEL[args.model]
-        if dataset[0].startswith("textattack"):
-            # unsavory way to pass custom dataset classes
-            # ex: dataset = ('textattack.datasets.translation.TedMultiTranslationDataset', 'en', 'de')
-            dataset = eval(f"{dataset[0]}")(*dataset[1:])
-            return dataset
-        else:
-            args.dataset_from_nlp = dataset
-    # Automatically detect dataset for models trained with textattack.
-    elif args.model and os.path.exists(args.model):
-        model_args_json_path = os.path.join(args.model, "train_args.json")
-        if not os.path.exists(model_args_json_path):
-            raise FileNotFoundError(
-                f"Tried to load model from path {args.model} - could not find train_args.json."
-            )
-        model_train_args = json.loads(open(model_args_json_path).read())
-        try:
-            if ":" in model_train_args["dataset"]:
-                name, subset = model_train_args["dataset"].split(":")
+    if not args.dataset_from_file and not args.dataset_from_nlp:
+        if args.model in HUGGINGFACE_DATASET_BY_MODEL:
+            _, args.dataset_from_nlp = HUGGINGFACE_DATASET_BY_MODEL[args.model]
+        elif args.model in TEXTATTACK_DATASET_BY_MODEL:
+            _, dataset = TEXTATTACK_DATASET_BY_MODEL[args.model]
+            if dataset[0].startswith("textattack"):
+                # unsavory way to pass custom dataset classes
+                # ex: dataset = ('textattack.datasets.translation.TedMultiTranslationDataset', 'en', 'de')
+                dataset = eval(f"{dataset[0]}")(*dataset[1:])
+                return dataset
             else:
-                name, subset = model_train_args["dataset"], None
-            args.dataset_from_nlp = (
-                name,
-                subset,
-                model_train_args["dataset_dev_split"],
-            )
-        except KeyError:
-            raise KeyError(
-                f"Tried to load model from path {args.model} but can't initialize dataset from train_args.json."
-            )
+                args.dataset_from_nlp = dataset
+        # Automatically detect dataset for models trained with textattack.
+        elif args.model and os.path.exists(args.model):
+            model_args_json_path = os.path.join(args.model, "train_args.json")
+            if not os.path.exists(model_args_json_path):
+                raise FileNotFoundError(
+                    f"Tried to load model from path {args.model} - could not find train_args.json."
+                )
+            model_train_args = json.loads(open(model_args_json_path).read())
+            try:
+                if ":" in model_train_args["dataset"]:
+                    name, subset = model_train_args["dataset"].split(":")
+                else:
+                    name, subset = model_train_args["dataset"], None
+                args.dataset_from_nlp = (
+                    name,
+                    subset,
+                    model_train_args["dataset_dev_split"],
+                )
+            except KeyError:
+                raise KeyError(
+                    f"Tried to load model from path {args.model} but can't initialize dataset from train_args.json."
+                )
 
     # Get dataset from args.
     if args.dataset_from_file:
