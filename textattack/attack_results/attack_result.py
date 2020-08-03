@@ -70,21 +70,9 @@ class AttackResult(ABC):
         pert_colored = self.perturbed_result.get_colored_output(color_method)
         return orig_colored + " --> " + pert_colored
 
-    def diff_color(self, color_method=None):
-        """Highlights the difference between two texts using color.
-
-        Has to account for deletions and insertions from original text to
-        perturbed. Relies on the index map stored in
-        ``self.original_result.attacked_text.attack_attrs["original_index_map"]``.
-        """
+    def diff_idxs(self):
         t1 = self.original_result.attacked_text
         t2 = self.perturbed_result.attacked_text
-
-        if color_method is None:
-            return t1.printable_text(), t2.printable_text()
-
-        color_1 = self.original_result.get_text_color_input()
-        color_2 = self.perturbed_result.get_text_color_perturbed()
 
         # iterate through and count equal/unequal words
         words_1_idxs = []
@@ -105,6 +93,26 @@ class AttackResult(ABC):
         # words to color in t2 are all the words that didn't have an equal,
         # mapped word in t1
         words_2_idxs = list(sorted(set(range(t2.num_words)) - t2_equal_idxs))
+        return words_1_idxs, words_2_idxs
+
+    def diff_color(self, color_method=None):
+        """Highlights the difference between two texts using color.
+
+        Has to account for deletions and insertions from original text to
+        perturbed. Relies on the index map stored in
+        ``self.original_result.attacked_text.attack_attrs["original_index_map"]``.
+        """
+
+        t1 = self.original_result.attacked_text
+        t2 = self.perturbed_result.attacked_text
+
+        if color_method is None:
+            return t1.printable_text(), t2.printable_text()
+
+        color_1 = self.original_result.get_text_color_input()
+        color_2 = self.perturbed_result.get_text_color_perturbed()
+
+        words_1_idxs, words_2_idxs = self.diff_idxs()
 
         # make lists of colored words
         words_1 = [t1.words[i] for i in words_1_idxs]
