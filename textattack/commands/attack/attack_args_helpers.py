@@ -203,8 +203,12 @@ def parse_attack_from_args(args, model):
         recipe.constraint_cache_size = args.constraint_cache_size
         return recipe
     elif args.attack_from_file:
+        attack_args = None
         if ":" in args.attack_from_file:
-            attack_file, attack_name = args.attack_from_file.split(":")
+            try:
+                attack_file, attack_name, attack_args = args.attack_from_file.split(":")
+            except Exception:
+                attack_file, attack_name = args.attack_from_file.split(":")
         else:
             attack_file, attack_name = args.attack_from_file, "attack"
         attack_module = load_module_from_file(attack_file)
@@ -213,7 +217,7 @@ def parse_attack_from_args(args, model):
                 f"Loaded `{attack_file}` but could not find `{attack_name}`."
             )
         attack_func = getattr(attack_module, attack_name)
-        return attack_func(model)
+        return attack_func(model, attack_args)
     else:
         goal_function = parse_goal_function_from_args(args, model)
         transformation = parse_transformation_from_args(args, model)
@@ -409,7 +413,7 @@ def parse_dataset_from_args(args):
             raise AttributeError(
                 f"``dataset`` not found in module {args.dataset_from_file}"
             )
-        dataset.setup(num_examples_offset=args.num_examples_offset, shuffle=args.shuffle)
+        dataset.setup(num_examples_offset=args.num_examples_offset, shuffle=args.shuffle, attack_args=args.attack_from_file)
     elif args.dataset_from_nlp:
         dataset_args = args.dataset_from_nlp
         if isinstance(dataset_args, str):
