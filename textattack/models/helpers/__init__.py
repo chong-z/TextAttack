@@ -1,6 +1,6 @@
 # Helper stuff, like embeddings.
 from . import utils
-from .glove_embedding_layer import GloveEmbeddingLayer
+from .glove_embedding_layer import GloveEmbeddingLayer, GloveLikeEmbeddingLayer
 
 # Helper modules.
 from .bert_for_classification import BERTForClassification

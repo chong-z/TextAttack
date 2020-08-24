@@ -3,7 +3,7 @@ from torch import nn as nn
 from torch.nn import functional as F
 
 import textattack
-from textattack.models.helpers import GloveEmbeddingLayer
+from textattack.models.helpers import GloveLikeEmbeddingLayer
 from textattack.models.helpers.utils import load_cached_state_dict
 from textattack.shared import utils
 
@@ -17,6 +17,7 @@ class WordCNNForClassification(nn.Module):
 
     def __init__(
         self,
+        use_gn=False,
         hidden_size=150,
         dropout=0.3,
         num_labels=2,
@@ -26,7 +27,7 @@ class WordCNNForClassification(nn.Module):
     ):
         super().__init__()
         self.drop = nn.Dropout(dropout)
-        self.emb_layer = GloveEmbeddingLayer(emb_layer_trainable=emb_layer_trainable)
+        self.emb_layer = GloveLikeEmbeddingLayer(use_gn=use_gn, emb_layer_trainable=emb_layer_trainable)
         self.word2id = self.emb_layer.word2id
         self.encoder = CNNTextLayer(
             self.emb_layer.n_d, widths=[3, 4, 5], filters=hidden_size

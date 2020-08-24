@@ -336,7 +336,7 @@ def parse_model_from_args(args):
                     f"Tried to load model from path {args.model} - could not find train_args.json."
                 )
             model_train_args = json.loads(open(model_args_json_path).read())
-            if model_train_args["model"] not in {"cnn", "lstm"}:
+            if "cnn" not in model_train_args["model"] and "lstm" not in model_train_args["model"]:
                 # for huggingface models, set args.model to the path of the model
                 model_train_args["model"] = args.model
             num_labels = model_train_args["num_labels"]

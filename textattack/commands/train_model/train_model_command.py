@@ -20,9 +20,10 @@ class TrainModelCommand(TextAttackCommand):
         )
         outputs_dir = os.path.normpath(outputs_dir)
 
-        args.output_dir = os.path.join(
-            outputs_dir, f"{args.model}-{args.dataset}-{date_now}/"
-        )
+        if args.output_dir is None:
+            args.output_dir = os.path.join(
+                outputs_dir, f"{args.model}-{args.dataset}-{date_now}/"
+            )
 
         from .run_training import train_model
 
@@ -189,6 +190,12 @@ class TrainModelCommand(TextAttackCommand):
             type=str,
             default="pytorch_model.bin",
             help="Filename to save model weights as",
+        )
+        parser.add_argument(
+            "--output-dir",
+            type=str,
+            default=None,
+            help="path to save the model",
         )
         parser.add_argument(
             "--enable-wandb",

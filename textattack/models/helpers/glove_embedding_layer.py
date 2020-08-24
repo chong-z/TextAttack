@@ -90,3 +90,36 @@ class GloveEmbeddingLayer(EmbeddingLayer):
         embedding_matrix = np.load(glove_matrix_path)
         super().__init__(embedding_matrix=embedding_matrix, word_list=word_list)
         self.embedding.weight.requires_grad = emb_layer_trainable
+
+
+class GloveLikeEmbeddingLayer(EmbeddingLayer):
+    """Pre-trained GLOVE or GN_GLOVE vectors. Uses embeddings of dimension 300.
+
+    Learning gender-neutral word embeddings. (Zhao, Jieyu, Yichao Zhou,
+        Zeyu Li, Wei Wang, and Kai-Wei Chang.)
+    """
+
+    GN_GLOVE_PATH = "word_embeddings/gn_glove.zhao2018.wikidump.300d.txt"
+    GLOVE_PATH = "word_embeddings/glove.zhao2018.wikidump.300d.txt"
+
+    def __init__(self, use_gn, emb_layer_trainable=False):
+        if use_gn:
+            glove_path = self.GN_GLOVE_PATH
+        else:
+            glove_path = self.GLOVE_PATH
+
+        with open(glove_path, 'r') as f:
+            lines = f.readlines()
+
+        word_list = []
+        embedding_matrix = []
+
+        for l in lines:
+            splits = l.split()
+            word_list.append(splits[0])
+            embedding_matrix.append(splits[1:])
+
+        word_list = np.array(word_list)
+        embedding_matrix = np.array(embedding_matrix, dtype=np.float)
+        super().__init__(embedding_matrix=embedding_matrix, word_list=word_list)
+        self.embedding.weight.requires_grad = emb_layer_trainable

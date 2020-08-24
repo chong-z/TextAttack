@@ -92,20 +92,24 @@ def model_from_args(train_args, num_labels, model_path=None):
     lstm/cnn, loads from disk (and `model_path` provides the path to the
     model).
     """
-    if train_args.model == "lstm":
+    if train_args.model in ["lstm", "gn-lstm"]:
+        use_gn = 'gn' in train_args.model
         textattack.shared.logger.info("Loading textattack model: LSTMForClassification")
         model = textattack.models.helpers.LSTMForClassification(
+            use_gn=use_gn,
             max_seq_length=train_args.max_length,
             num_labels=num_labels,
             emb_layer_trainable=False,
         )
         if model_path:
             model.load_from_disk(model_path)
-    elif train_args.model == "cnn":
+    elif train_args.model in ["cnn", 'gn-cnn']:
+        use_gn = 'gn' in train_args.model
         textattack.shared.logger.info(
             "Loading textattack model: WordCNNForClassification"
         )
         model = textattack.models.helpers.WordCNNForClassification(
+            use_gn=use_gn,
             max_seq_length=train_args.max_length,
             num_labels=num_labels,
             emb_layer_trainable=False,
@@ -151,14 +155,19 @@ def attack_from_args(args):
 
 def augmenter_from_args(args):
     augmenter = None
-    if args.augment:
+    if args.augment and args.augment != "None":
         if args.augment in AUGMENTATION_RECIPE_NAMES:
-            augmenter = eval(AUGMENTATION_RECIPE_NAMES[args.augment])(
-                pct_words_to_swap=args.pct_words_to_swap,
-                transformations_per_example=args.transformations_per_example,
-            )
+            augmenter_cls = eval(AUGMENTATION_RECIPE_NAMES[args.augment])
         else:
-            raise ValueError(f"Unrecognized augmentation recipe: {args.augment}")
+            assert ":" in args.augment
+            augmenter_module, augmenter_name = args.augment.split(":")
+            import importlib
+            augmenter_cls = getattr(importlib.import_module(augmenter_module), augmenter_name)
+
+        augmenter = augmenter_cls(
+            pct_words_to_swap=args.pct_words_to_swap,
+            transformations_per_example=args.transformations_per_example,
+        )
     return augmenter
 
 
