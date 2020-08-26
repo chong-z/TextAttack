@@ -99,6 +99,14 @@ class AttackCommand(TextAttackCommand):
         )
 
         parser.add_argument(
+            "--wandb-tag",
+            type=str,
+            required=False,
+            default=None,
+            help="Tag for Weights & Biases if enabled.",
+        )
+
+        parser.add_argument(
             "--disable-stdout", action="store_true", help="Disable logging to stdout"
         )
 
