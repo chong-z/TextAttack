@@ -125,9 +125,20 @@ def model_from_args(train_args, num_labels, model_path=None):
         config = transformers.AutoConfig.from_pretrained(
             train_args.model, num_labels=num_labels, finetuning_task=train_args.dataset
         )
-        model = transformers.AutoModelForSequenceClassification.from_pretrained(
-            train_args.model, config=config,
-        )
+        if train_args.from_pretrained:
+            textattack.shared.logger.info(
+                f"Using pretrained weights from transformers."
+            )
+            model = transformers.AutoModelForSequenceClassification.from_pretrained(
+                train_args.model, config=config,
+            )
+        else:
+            textattack.shared.logger.info(
+                f"Using randomly initialized weights."
+            )
+            model = transformers.AutoModelForSequenceClassification.from_config(
+                config=config,
+            )
         tokenizer = textattack.models.tokenizers.AutoTokenizer(
             train_args.model, use_fast=True, max_length=train_args.max_length
         )
@@ -155,7 +166,7 @@ def attack_from_args(args):
 
 def augmenter_from_args(args):
     augmenter = None
-    if args.augment and args.augment != "None":
+    if args.augment and args.augment not in ["None", "no-aug"]:
         if args.augment in AUGMENTATION_RECIPE_NAMES:
             augmenter_cls = eval(AUGMENTATION_RECIPE_NAMES[args.augment])
         else:

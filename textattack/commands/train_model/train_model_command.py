@@ -1,4 +1,5 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from distutils import util as distutil
 import datetime
 import os
 
@@ -20,9 +21,11 @@ class TrainModelCommand(TextAttackCommand):
         )
         outputs_dir = os.path.normpath(outputs_dir)
 
+        from_pretrained = 'pretrained' if args.from_pretrained else 'random'
+
         if args.output_dir is None:
             args.output_dir = os.path.join(
-                outputs_dir, f"{args.model}-{args.dataset}-{date_now}/"
+                os.getcwd(), 'models/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{date_now}/"
             )
 
         from .run_training import train_model
@@ -171,6 +174,12 @@ class TrainModelCommand(TextAttackCommand):
             type=int,
             default=42,
             help="Random seed training",
+        )
+        parser.add_argument(
+            "--from-pretrained",
+            type=distutil.strtobool, nargs='?',
+            const=True, default=True,
+            help="Use pretrained model from HuggingFace if True, otherwise will use randomly initialized weights.",
         )
         parser.add_argument(
             "--grad-accum-steps",

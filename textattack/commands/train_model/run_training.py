@@ -259,9 +259,7 @@ def _generate_adversarial_examples(model, attackCls, dataset):
 
 
 def train_model(args):
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    textattack.shared.utils.set_seed(args.seed)
 
     logger.warn(
         "WARNING: TextAttack's model training feature is in beta. Please report any issues on our Github page, https://github.com/QData/TextAttack/issues."
@@ -283,6 +281,7 @@ def train_model(args):
         import wandb
 
         wandb.init(sync_tensorboard=True)
+        wandb.config.update({"output-dir": args.output_dir})
 
     # Get list of text and list of label (integers) from disk.
     train_text, train_labels, eval_text, eval_labels = dataset_from_args(args)
