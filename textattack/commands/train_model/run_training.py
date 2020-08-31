@@ -4,6 +4,7 @@ import math
 import os
 
 import numpy as np
+import random
 import scipy
 import torch
 from torch.utils.data import DataLoader, RandomSampler
@@ -258,6 +259,10 @@ def _generate_adversarial_examples(model, attackCls, dataset):
 
 
 def train_model(args):
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
     logger.warn(
         "WARNING: TextAttack's model training feature is in beta. Please report any issues on our Github page, https://github.com/QData/TextAttack/issues."
     )
@@ -511,6 +516,12 @@ def train_model(args):
         if not adversarial_training or epoch >= args.num_clean_epochs:
             eval_score = _get_eval_score(model, eval_dataloader, args.do_regression)
             tb_writer.add_scalar("epoch_eval_score", eval_score, global_step)
+            if args.enable_wandb:
+                metrics = {
+                    'loss': loss.item(),
+                    'eval_acc': eval_score,
+                }
+                wandb.log(metrics)
 
             if args.checkpoint_every_epoch:
                 _save_model_checkpoint(model, args.output_dir, global_step)
@@ -544,6 +555,14 @@ def train_model(args):
     logger.info(
         f"Eval of saved model {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
     )
+
+    tb_writer.add_scalar("eval_acc", eval_score)
+    if args.enable_wandb:
+        metrics = {
+            'loss': loss.item(),
+            'eval_acc': eval_score,
+        }
+        wandb.log(metrics)
 
     if args.save_last:
         _save_model(model, args.output_dir, args.weights_name, args.config_name)

@@ -167,6 +167,12 @@ class TrainModelCommand(TextAttackCommand):
             help="Learning rate for Adam Optimization",
         )
         parser.add_argument(
+            "--seed",
+            type=int,
+            default=42,
+            help="Random seed training",
+        )
+        parser.add_argument(
             "--grad-accum-steps",
             type=int,
             default=1,
