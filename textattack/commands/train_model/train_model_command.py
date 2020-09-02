@@ -25,7 +25,7 @@ class TrainModelCommand(TextAttackCommand):
 
         if args.output_dir is None:
             args.output_dir = os.path.join(
-                os.getcwd(), 'models/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{date_now}/"
+                os.getcwd(), 'models/sweeps/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{date_now}/"
             )
 
         from .run_training import train_model
