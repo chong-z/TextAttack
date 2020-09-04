@@ -102,7 +102,7 @@ def _filter_labels(text, labels, allowed_labels):
     return final_text, final_labels
 
 
-def _save_model_checkpoint(model, output_dir, global_step):
+def _save_model_checkpoint(model, output_dir, global_step, weights_name, config_name):
     """Save model checkpoint to disk.
 
     :param model: Model to save (pytorch)
@@ -113,9 +113,13 @@ def _save_model_checkpoint(model, output_dir, global_step):
     output_dir = os.path.join(output_dir, "checkpoint-{}".format(global_step))
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
     # Take care of distributed/parallel training
     model_to_save = model.module if hasattr(model, "module") else model
-    model_to_save.save_pretrained(output_dir)
+    if hasattr(model_to_save, "save_pretrained"):
+        model_to_save.save_pretrained(output_dir)
+    else:
+        _save_model(model, output_dir, weights_name, config_name)
 
 
 def _save_model(model, output_dir, weights_name, config_name):
@@ -505,7 +509,7 @@ def train_model(args):
                 and (args.checkpoint_steps > 0)
                 and (global_step % args.checkpoint_steps) == 0
             ):
-                _save_model_checkpoint(model, args.output_dir, global_step)
+                _save_model_checkpoint(model, args.output_dir, global_step, args.weights_name, args.config_name)
 
             # Inc step counter.
             global_step += 1
@@ -516,14 +520,16 @@ def train_model(args):
             eval_score = _get_eval_score(model, eval_dataloader, args.do_regression)
             tb_writer.add_scalar("epoch_eval_score", eval_score, global_step)
             if args.enable_wandb:
+                lr = scheduler.get_last_lr()[0] if scheduler is not None else args.learning_rate
                 metrics = {
                     'loss': loss.item(),
                     'eval_acc': eval_score,
+                    'scheduler_lr': lr,
                 }
                 wandb.log(metrics)
 
             if args.checkpoint_every_epoch:
-                _save_model_checkpoint(model, args.output_dir, global_step)
+                _save_model_checkpoint(model, args.output_dir, global_step, args.weights_name, args.config_name)
 
             logger.info(
                 f"Eval {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"

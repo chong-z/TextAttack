@@ -332,9 +332,20 @@ def parse_model_from_args(args):
             # trained with textattack, and try and load it.
             model_args_json_path = os.path.join(args.model, "train_args.json")
             if not os.path.exists(model_args_json_path):
-                raise FileNotFoundError(
-                    f"Tried to load model from path {args.model} - could not find train_args.json."
-                )
+                if 'checkpoint' in args.model:
+                    alt_dir = os.path.split(args.model)[0]
+                    model_args_json_path = os.path.join(alt_dir, "train_args.json")
+                    textattack.shared.logger.warn(
+                        f"Could not find train_args.json in {args.model}, might be a checkpoint. Trying alternative path {alt_dir}."
+                    )
+                    if not os.path.exists(model_args_json_path):
+                        raise FileNotFoundError(
+                            f"Tried to load model from alternative path {alt_dir} - could not find train_args.json."
+                        )
+                else:
+                    raise FileNotFoundError(
+                        f"Tried to load model from path {args.model} - could not find train_args.json."
+                    )
             model_train_args = json.loads(open(model_args_json_path).read())
             if "cnn" not in model_train_args["model"] and "lstm" not in model_train_args["model"]:
                 # for huggingface models, set args.model to the path of the model

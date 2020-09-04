@@ -125,12 +125,13 @@ def model_from_args(train_args, num_labels, model_path=None):
         config = transformers.AutoConfig.from_pretrained(
             train_args.model, num_labels=num_labels, finetuning_task=train_args.dataset
         )
-        if train_args.from_pretrained:
+        if model_path is not None or train_args.from_pretrained:
+            model_path = model_path or train_args.model
             textattack.shared.logger.info(
                 f"Using pretrained weights from transformers."
             )
             model = transformers.AutoModelForSequenceClassification.from_pretrained(
-                train_args.model, config=config,
+                model_path, config=config,
             )
         else:
             textattack.shared.logger.info(
