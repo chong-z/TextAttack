@@ -249,7 +249,10 @@ def parse_model_from_args(args):
             f"Loading model and tokenizer from file: {colored_model_name}"
         )
         if ":" in args.model_from_file:
-            model_file, model_name, tokenizer_name = args.model_from_file.split(":")
+            splits = args.model_from_file.split(":")
+            if len(splits) == 2:
+                splits.append("tokenizer")
+            model_file, model_name, tokenizer_name = splits
         else:
             model_file, model_name, tokenizer_name = (
                 args.model_from_file,
