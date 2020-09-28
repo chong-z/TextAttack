@@ -152,7 +152,7 @@ class GoalFunction(ABC):
         objects."""
         if not len(attacked_text_list):
             return []
-        ids = utils.batch_tokenize(self.tokenizer, attacked_text_list)
+        ids = utils.batch_tokenize(self.tokenizer, attacked_text_list, batch_size=self.model_batch_size)
 
         with torch.no_grad():
             outputs = batch_model_predict(

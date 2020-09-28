@@ -4,18 +4,29 @@ import textattack
 
 # from textattack.shared import utils
 
+class BatchedIds:
+    def __init__(self, ids):
+        self.ids = ids
 
-def batch_tokenize(tokenizer, attacked_text_list):
+
+def batch_tokenize(tokenizer, attacked_text_list, batch_size=None):
     """Tokenizes a list of inputs and returns their tokenized forms in a
     list."""
     inputs = [at.tokenizer_input for at in attacked_text_list]
-    if hasattr(tokenizer, "batch_encode"):
+    if batch_size is not None and hasattr(tokenizer, "batch_encode_with_size"):
+        return BatchedIds(tokenizer.batch_encode_with_size(inputs, batch_size))
+    elif hasattr(tokenizer, "batch_encode"):
         return tokenizer.batch_encode(inputs)
     else:
         return [tokenizer.encode(x) for x in inputs]
 
 
 def batch_model_predict(model, inputs, batch_size=32):
+    if isinstance(inputs, BatchedIds):
+        # inputs has already been batched by |batch_tokenize|.
+        inputs = inputs.ids
+        batch_size = 1
+
     outputs = []
     i = 0
     while i < len(inputs):
@@ -66,16 +77,23 @@ def try_model_predict(model, inputs):
         outputs = model(**inputs)
 
     elif isinstance(inputs[0], dict):
-        # If ``inputs`` is a list of dicts, we convert them to a single dict
-        # (now of tensors) and pass to the model as kwargs.
-        # Convert list of dicts to dict of lists.
-        input_dict = {k: [_dict[k] for _dict in inputs] for k in inputs[0]}
-        # Convert list keys to tensors.
-        for key in input_dict:
-            input_dict[key] = pad_lists(input_dict[key])
-            input_dict[key] = torch.tensor(input_dict[key]).to(model_device)
-        # Do inference using keys as kwargs.
-        outputs = model(**input_dict)
+        try:
+            # If ``inputs`` is a list of dicts, we convert them to a single dict
+            # (now of tensors) and pass to the model as kwargs.
+            # Convert list of dicts to dict of lists.
+            input_dict = {k: [_dict[k] for _dict in inputs] for k in inputs[0]}
+            # Convert list keys to tensors.
+            for key in input_dict:
+                input_dict[key] = pad_lists(input_dict[key])
+                input_dict[key] = torch.tensor(input_dict[key]).to(model_device)
+            # Do inference using keys as kwargs.
+            outputs = model(**input_dict)
+        except Exception:
+            # Failed to merged inputs, fallback to naive predictions.
+            preds = []
+            for input_dict in inputs:
+                preds.append(model(**input_dict))
+            outputs = torch.cat(preds)
 
     else:
         # If ``inputs`` is not a list of dicts, it's either a list of tuples

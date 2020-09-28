@@ -30,33 +30,23 @@ class EvalModelCommand(TextAttackCommand):
     specifications.
     """
 
-    def get_preds(self, model, inputs):
+    def get_preds(self, model, inputs, batch_size):
         with torch.no_grad():
-            preds = textattack.shared.utils.model_predict(model, inputs)
+            preds = textattack.shared.utils.batch_model_predict(model, inputs, batch_size)
         return preds
 
     def test_model_on_dataset(self, args):
         model = parse_model_from_args(args)
         dataset = parse_dataset_from_args(args)
 
-        preds = []
-        ground_truth_outputs = []
-        i = 0
-        while i < min(args.num_examples, len(dataset)):
-            dataset_batch = dataset[i : min(args.num_examples, i + args.batch_size)]
-            batch_texts = []
-            for (text_input, ground_truth_output) in dataset_batch:
-                attacked_text = textattack.shared.AttackedText(text_input)
-                # ids = model.tokenizer.encode(attacked_text.tokenizer_input)
-                batch_texts.append(attacked_text.tokenizer_input)
-                ground_truth_outputs.append(ground_truth_output)
+        dataset = dataset[:args.num_examples]
+        attacked_texts = [textattack.shared.AttackedText(text) for text, _ in dataset]
+        ground_truth_outputs = [label for _, label in dataset]
 
-            batch_inputs = model.tokenizer.batch_encode(batch_texts)
-            batch_preds = self.get_preds(model, batch_inputs)
-            preds.extend(batch_preds)
-            i += args.batch_size
+        inputs = textattack.shared.utils.batch_tokenize(model.tokenizer, attacked_texts, batch_size=args.batch_size)
+        preds = self.get_preds(model, inputs, batch_size=args.batch_size)
 
-        preds = torch.stack(preds).squeeze().cpu()
+        preds = preds.cpu()
         ground_truth_outputs = torch.tensor(ground_truth_outputs).cpu()
 
         logger.info(f"Got {len(preds)} predictions.")
