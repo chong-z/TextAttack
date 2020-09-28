@@ -78,7 +78,7 @@ def add_dataset_args(parser):
         type=eval,
         required=False,
         choices=[True, False],
-        default="True",
+        default="False",
         help="Randomly shuffle the data before attacking",
     )
     parser.add_argument(
@@ -251,13 +251,13 @@ def parse_model_from_args(args):
         if ":" in args.model_from_file:
             model_file, model_name, tokenizer_name = args.model_from_file.split(":")
         else:
-            _, model_name, tokenizer_name = (
+            model_file, model_name, tokenizer_name = (
                 args.model_from_file,
                 "model",
                 "tokenizer",
             )
         try:
-            model_module = load_module_from_file(args.model_from_file)
+            model_module = load_module_from_file(model_file)
         except Exception:
             raise ValueError(f"Failed to import file {args.model_from_file}")
         try:

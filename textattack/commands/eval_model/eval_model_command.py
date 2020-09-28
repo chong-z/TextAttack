@@ -44,13 +44,16 @@ class EvalModelCommand(TextAttackCommand):
         i = 0
         while i < min(args.num_examples, len(dataset)):
             dataset_batch = dataset[i : min(args.num_examples, i + args.batch_size)]
-            batch_inputs = []
+            batch_texts = []
             for (text_input, ground_truth_output) in dataset_batch:
                 attacked_text = textattack.shared.AttackedText(text_input)
-                ids = model.tokenizer.encode(attacked_text.tokenizer_input)
-                batch_inputs.append(ids)
+                # ids = model.tokenizer.encode(attacked_text.tokenizer_input)
+                batch_texts.append(attacked_text.tokenizer_input)
                 ground_truth_outputs.append(ground_truth_output)
-            preds.extend(self.get_preds(model, batch_inputs))
+
+            batch_inputs = model.tokenizer.batch_encode(batch_texts)
+            batch_preds = self.get_preds(model, batch_inputs)
+            preds.extend(batch_preds)
             i += args.batch_size
 
         preds = torch.stack(preds).squeeze().cpu()
