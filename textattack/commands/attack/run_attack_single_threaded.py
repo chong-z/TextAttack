@@ -78,7 +78,7 @@ def run(args, checkpoint=None):
                 text = OrderedDict([(f'text{i}', text[i].strip()) for i in range(len(text))])
 
             attacked_text = textattack.shared.attacked_text.AttackedText(text)
-            initial_result = attack.goal_function.get_output(attacked_text)
+            initial_result, _ = attack.goal_function.init_attack_example(attacked_text, 0)
             result = next(attack.attack_dataset([(text, initial_result)]))
             print(result.__str__(color_method="ansi") + "\n")
 
