@@ -277,6 +277,7 @@ def parse_model_from_args(args):
             )
         model = model.to(textattack.shared.utils.device)
         setattr(model, "tokenizer", tokenizer)
+        setattr(model, "name", f"model_from_file:{args.model_from_file}")
     elif (args.model in HUGGINGFACE_DATASET_BY_MODEL) or args.model_from_huggingface:
         import transformers
 
@@ -324,12 +325,14 @@ def parse_model_from_args(args):
                 )
                 tokenizer = textattack.models.tokenizers.AutoTokenizer("bert-base-uncased")
         setattr(model, "tokenizer", tokenizer)
+        setattr(model, "name", f"model:{args.model if (args.model in HUGGINGFACE_DATASET_BY_MODEL) else args.model_from_huggingface}")
     else:
         if args.model in TEXTATTACK_DATASET_BY_MODEL:
             model_path, _ = TEXTATTACK_DATASET_BY_MODEL[args.model]
             model = textattack.shared.utils.load_textattack_model_from_path(
                 args.model, model_path
             )
+            setattr(model, "name", f"model:{args.model}")
         elif args.model and os.path.exists(args.model):
             # If `args.model` is a path/directory, let's assume it was a model
             # trained with textattack, and try and load it.
@@ -363,6 +366,7 @@ def parse_model_from_args(args):
                 num_labels,
                 model_path=args.model,
             )
+            setattr(model, "name", f"model:{args.model}")
         else:
             raise ValueError(f"Error: unsupported TextAttack model {args.model}")
     return model
