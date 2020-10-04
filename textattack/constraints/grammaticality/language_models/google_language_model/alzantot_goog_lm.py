@@ -39,6 +39,10 @@ class GoogLMHelper:
 
         self.vocab = lm_data_utils.CharsVocabulary(self.VOCAB_PATH, self.MAX_WORD_LEN)
         with tf.device("/gpu:1"):
+            # Don't use all memory.
+            physical_devices = tf.config.list_physical_devices('GPU')
+            tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
             self.graph = tf.Graph()
             self.sess = tf.compat.v1.Session(graph=self.graph)
         with self.graph.as_default():
