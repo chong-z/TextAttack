@@ -1,6 +1,6 @@
 # import os
 
-# import tensorflow as tf
+import tensorflow as tf
 import tensorflow_hub as hub
 
 from textattack.constraints.semantics.sentence_encoders import SentenceEncoder
@@ -18,6 +18,9 @@ class UniversalSentenceEncoder(SentenceEncoder):
         else:
             tfhub_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
 
+        # Don't use all memory.
+        physical_devices = tf.config.list_physical_devices('GPU')
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
         self.model = hub.load(tfhub_url)
 
     def encode(self, sentences):
