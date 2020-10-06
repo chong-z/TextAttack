@@ -97,7 +97,7 @@ logger = logging.getLogger(__name__)
 logging.config.dictConfig(
     {"version": 1, "loggers": {__name__: {"level": logging.INFO}}}
 )
-formatter = logging.Formatter(f"{LOG_STRING}: %(message)s")
+formatter = logging.Formatter(f"%(asctime)s; {LOG_STRING}: %(message)s", "%Y-%m-%d %H:%M:%S")
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)

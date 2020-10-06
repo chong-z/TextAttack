@@ -7,7 +7,7 @@ from textattack.shared import utils
 from .language_model_constraint import LanguageModelConstraint
 
 # temporarily silence W&B to ignore log-in warning
-os.environ["WANDB_SILENT"] = "1"
+# os.environ["WANDB_SILENT"] = "1"
 
 
 class GPT2(LanguageModelConstraint):
@@ -21,7 +21,7 @@ class GPT2(LanguageModelConstraint):
         import transformers
 
         # re-enable notifications
-        os.environ["WANDB_SILENT"] = "0"
+        # os.environ["WANDB_SILENT"] = "0"
         self.model = transformers.GPT2LMHeadModel.from_pretrained("gpt2")
         self.model.to(utils.device)
         self.tokenizer = transformers.GPT2Tokenizer.from_pretrained("gpt2")
