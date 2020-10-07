@@ -40,7 +40,7 @@ class FileLogger(Logger):
         self.num_results += 1
         color_method = "ansi" if self.stdout else "file"
         self.fout.write(
-            "-" * 45 + " Result " + str(self.num_results) + " " + "-" * 45 + "\n"
+            "\n" + "-" * 45 + " Result " + str(self.num_results) + " " + "-" * 45 + "\n"
         )
         self.fout.write(result.__str__(color_method=color_method))
         self.fout.write("\n")
