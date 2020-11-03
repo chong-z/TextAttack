@@ -72,8 +72,8 @@ class AttackLogManager:
         all_num_words = np.zeros(len(self.results))
         sum_failed_score = 0.0
         sum_successful_score = 0.0
-        perturbed_word_counts = np.zeros(len(self.results))
-        perturbed_word_percentages = np.zeros(len(self.results))
+        perturbed_word_counts = []
+        perturbed_word_percentages = []
         num_words_changed_until_success = np.zeros(
             2 ** 16
         )  # @ TODO: be smarter about this
@@ -110,8 +110,8 @@ class AttackLogManager:
                 )
             else:
                 perturbed_word_percentage = 0
-            perturbed_word_counts[i] = num_words_changed
-            perturbed_word_percentages[i] = perturbed_word_percentage
+            perturbed_word_counts.append(num_words_changed)
+            perturbed_word_percentages.append(perturbed_word_percentage)
 
         # Original classifier success rate on these samples.
         original_accuracy = (total_attacks - skipped_attacks) * 100.0 / (total_attacks)
@@ -136,6 +136,8 @@ class AttackLogManager:
         average_successful_score = 0 if successful_attacks == 0 else sum_successful_score / successful_attacks
         average_successful_score = str(round(average_successful_score, 4))
 
+        perturbed_word_counts = np.array(perturbed_word_counts)
+        perturbed_word_percentages = np.array(perturbed_word_percentages)
         perturbed_word_percentages = perturbed_word_percentages[
             perturbed_word_percentages > 0
         ]
@@ -150,6 +152,7 @@ class AttackLogManager:
             ["Number of successful attacks:", str(successful_attacks)],
             ["Number of failed attacks:", str(failed_attacks)],
             ["Number of skipped attacks:", str(skipped_attacks)],
+            ["Number of total attacks:", str(total_attacks)],
             ["Original accuracy:", original_accuracy],
             ["Accuracy under attack:", accuracy_under_attack],
             ["Attack success rate:", attack_success_rate],
