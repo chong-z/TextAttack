@@ -241,6 +241,9 @@ def parse_attack_from_args(args, model):
 
 
 def parse_model_from_args(args):
+    if args.model and '.py' in args.model:
+        args.model_from_file = args.model
+
     if args.model_from_file:
         colored_model_name = textattack.shared.utils.color_text(
             args.model_from_file, color="blue", method="ansi"
