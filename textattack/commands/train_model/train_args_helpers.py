@@ -82,6 +82,10 @@ def dataset_from_args(args):
                         )
     eval_text, eval_labels = prepare_dataset_for_training(eval_dataset)
 
+    if args.flip_label:
+        train_labels = [1 - l for l in train_labels]
+        eval_labels = [1 - l for l in eval_labels]
+
     return train_text, train_labels, eval_text, eval_labels
 
 

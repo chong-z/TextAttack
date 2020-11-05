@@ -52,6 +52,12 @@ class TrainModelCommand(TextAttackCommand):
             " ex: `glue:sst2` or `rotten_tomatoes`",
         )
         parser.add_argument(
+            "--flip-label",
+            default=False,
+            action="store_true",
+            help="flip the label of train and val dataset",
+        )
+        parser.add_argument(
             "--pct-dataset",
             type=float,
             default=1.0,
@@ -217,5 +223,11 @@ class TrainModelCommand(TextAttackCommand):
             default=False,
             action="store_true",
             help="log metrics to Weights & Biases",
+        )
+        parser.add_argument(
+            "--wandb-tag",
+            type=str,
+            default=None,
+            help="not supported",
         )
         parser.set_defaults(func=TrainModelCommand())
