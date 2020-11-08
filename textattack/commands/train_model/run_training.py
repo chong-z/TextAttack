@@ -232,14 +232,14 @@ def _data_augmentation(text, labels, augmenter):
 
     :return: augmented_text, augmented_labels. list of (augmented) input text and labels.
     """
-    aug_text = augmenter.augment_many(text)
+    # aug_text = augmenter.augment_many(text)
+    aug_text_with_label = augmenter.augment_many_with_labels(text, labels)
     # flatten augmented examples and duplicate labels
     flat_aug_text = []
     flat_aug_labels = []
-    for i, examples in enumerate(aug_text):
-        for aug_ver in examples:
-            flat_aug_text.append(aug_ver)
-            flat_aug_labels.append(labels[i])
+    for example, label in aug_text_with_label:
+        flat_aug_text.append(example)
+        flat_aug_labels.append(label)
     return flat_aug_text, flat_aug_labels
 
 

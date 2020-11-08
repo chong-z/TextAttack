@@ -24,8 +24,10 @@ class TrainModelCommand(TextAttackCommand):
         from_pretrained = 'pretrained' if args.from_pretrained else 'random'
 
         if args.output_dir is None:
+            suffix = args.wandb_tag if args.wandb_tag is not None else date_now
+
             args.output_dir = os.path.join(
-                os.getcwd(), 'models/sweeps/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{date_now}/"
+                os.getcwd(), 'models/sweeps/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{suffix}"
             )
 
         from .run_training import train_model
@@ -228,6 +230,6 @@ class TrainModelCommand(TextAttackCommand):
             "--wandb-tag",
             type=str,
             default=None,
-            help="not supported",
+            help="optional suffix to the model ouput dir",
         )
         parser.set_defaults(func=TrainModelCommand())

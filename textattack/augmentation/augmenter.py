@@ -113,6 +113,22 @@ class Augmenter:
             text_list = tqdm.tqdm(text_list, desc="Augmenting data...")
         return [self.augment(text) for text in text_list]
 
+    def augment_many_with_labels(self, text_list, labels, show_progress=False):
+        """Returns all possible augmentations of a list of strings according to
+        ``self.transformation``.
+
+        Args:
+            text_list (list(string)): a list of strings for data augmentation
+
+        Returns a list(string) of augmented texts.
+        """
+        if show_progress:
+            text_list = tqdm.tqdm(text_list, desc="Augmenting data...")
+        text_label = []
+        for text, label in zip(text_list, labels):
+            text_label.extend(self.augment_with_label(text, label))
+        return text_label
+
     def augment_text_with_ids(self, text_list, id_list, show_progress=True):
         """Supplements a list of text with more text data.
 
