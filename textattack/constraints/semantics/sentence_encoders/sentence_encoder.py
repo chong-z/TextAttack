@@ -89,7 +89,7 @@ class SentenceEncoder(Constraint):
             modified_index, self.window_size
         )
 
-        starting_embedding, transformed_embedding = self.model.encode(
+        starting_embedding, transformed_embedding = self.encode(
             [starting_text_window, transformed_text_window]
         )
 
