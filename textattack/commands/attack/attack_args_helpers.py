@@ -187,6 +187,9 @@ def parse_constraints_from_args(args):
 
 
 def parse_attack_from_args(args, model):
+    if args.attack_from_file in ATTACK_RECIPE_NAMES:
+        args.recipe = args.attack_from_file
+
     if args.recipe:
         if ":" in args.recipe:
             recipe_name, params = args.recipe.split(":")
