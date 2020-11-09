@@ -5,15 +5,14 @@ from textattack.shared.attack import Attack
 from textattack.transformations import (
     CompositeTransformation,
     WordSwapContract,
-    WordSwapExtend,
-    WordSwapChangeNumber,
+    # WordSwapExtend,
+    # WordSwapChangeNumber,
     WordSwapChangeLocation,
     WordSwapChangeName,
 )
-from .attack_recipe import AttackRecipe
 
 
-class Checklist2020(AttackRecipe):
+def Checklist2020(model):
     """An implementation of the attack used in "Beyond Accuracy: Behavioral
     Testing of NLP models with CheckList", Ribeiro et al., 2020.".
     This attack focuses on a number of attacks used in the Invariance Testing
@@ -28,23 +27,21 @@ class Checklist2020(AttackRecipe):
     :param max_num_word_swaps: Maximum number of modifications to allow.
     """
 
-    @staticmethod
-    def build(model):
-        transformation = CompositeTransformation(
-            [
-                WordSwapExtend(),
-                WordSwapContract(),
-                WordSwapChangeName(),
-                WordSwapChangeNumber(),
-                WordSwapChangeLocation(),
-            ]
-        )
+    transformation = CompositeTransformation(
+        [
+            # WordSwapExtend(),
+            WordSwapContract(),
+            WordSwapChangeName(),
+            # WordSwapChangeNumber(),
+            WordSwapChangeLocation(),
+        ]
+    )
 
-        # Need this constraint to prevent extend and contract modifying each others' changes and forming infinite loop
-        constraints = [RepeatModification()]
+    # Need this constraint to prevent extend and contract modifying each others' changes and forming infinite loop
+    constraints = [RepeatModification()]
 
-        # Untargeted attack & GreedySearch
-        goal_function = UntargetedClassification(model)
-        search_method = GreedySearch()
+    # Untargeted attack & GreedySearch
+    goal_function = UntargetedClassification(model)
+    search_method = GreedySearch()
 
-        return Attack(goal_function, constraints, transformation, search_method)
+    return Attack(goal_function, constraints, transformation, search_method)
