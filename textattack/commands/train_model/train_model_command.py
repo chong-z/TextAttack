@@ -27,7 +27,7 @@ class TrainModelCommand(TextAttackCommand):
             suffix = args.wandb_tag if args.wandb_tag is not None else date_now
 
             args.output_dir = os.path.join(
-                os.getcwd(), 'models/sweeps/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{suffix}"
+                os.getcwd(), 'model_data/sweeps/', f"{args.model}_{from_pretrained}_{args.dataset}_{args.augment}_{suffix}"
             )
 
         from .run_training import train_model
