@@ -1,7 +1,7 @@
 import collections
 import random
 
-import nlp
+import datasets
 
 import textattack
 from textattack.datasets import TextAttackDataset
@@ -14,7 +14,7 @@ def _cb(s):
 
 
 def get_nlp_dataset_columns(dataset):
-    schema = set(dataset.schema.names)
+    schema = set(dataset.column_names)
     if {"premise", "hypothesis", "label"} <= schema:
         input_columns = ("premise", "hypothesis")
         output_column = "label"
@@ -51,14 +51,14 @@ def get_nlp_dataset_columns(dataset):
 
 
 class HuggingFaceNlpDataset(TextAttackDataset):
-    """Loads a dataset from HuggingFace ``nlp`` and prepares it as a TextAttack
+    """Loads a dataset from HuggingFace ``datasets`` and prepares it as a TextAttack
     dataset.
 
     - name: the dataset name
-    - subset: the subset of the main dataset. Dataset will be loaded as ``nlp.load_dataset(name, subset)``.
+    - subset: the subset of the main dataset. Dataset will be loaded as ``datasets.load_dataset(name, subset)``.
     - label_map: Mapping if output labels should be re-mapped. Useful
       if model was trained with a different label arrangement than
-      provided in the ``nlp`` version of the dataset.
+      provided in the ``datasets`` version of the dataset.
     - output_scale_factor (float): Factor to divide ground-truth outputs by.
         Generally, TextAttack goal functions require model outputs
         between 0 and 1. Some datasets test the model's correlation
@@ -78,7 +78,7 @@ class HuggingFaceNlpDataset(TextAttackDataset):
         shuffle=False,
     ):
         self._name = name
-        self._dataset = nlp.load_dataset(name, subset)[split]
+        self._dataset = datasets.load_dataset(name, subset)[split]
         subset_print_str = f", subset {_cb(subset)}" if subset else ""
         textattack.shared.logger.info(
             f"Loading {_cb('nlp')} dataset {_cb(name)}{subset_print_str}, split {_cb(split)}."
