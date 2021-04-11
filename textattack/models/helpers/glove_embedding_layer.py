@@ -99,14 +99,24 @@ class GloveLikeEmbeddingLayer(EmbeddingLayer):
         Zeyu Li, Wei Wang, and Kai-Wei Chang.)
     """
 
-    GN_GLOVE_PATH = "word_embeddings/gn_glove.zhao2018.wikidump.300d.txt"
-    GLOVE_PATH = "word_embeddings/glove.zhao2018.wikidump.300d.txt"
+    ZHAO2018_PATHS = {
+        "zhao2018": "word_embeddings/glove.zhao2018.wikidump.300d.txt",
+        "zhao2018-gn": "word_embeddings/gn_glove.zhao2018.wikidump.300d.txt",
+    }
 
-    def __init__(self, use_gn, emb_layer_trainable=False):
-        if use_gn:
-            glove_path = self.GN_GLOVE_PATH
+    def __init__(self, embedding_type, emb_layer_trainable=False):
+        if embedding_type in self.ZHAO2018_PATHS:
+            embedding_matrix, word_list = self.load_zhao2018(embedding_type=embedding_type)
         else:
-            glove_path = self.GLOVE_PATH
+            assert embedding_type == "glove200"
+            embedding_matrix, word_list = self.load_glove200()
+
+        super().__init__(embedding_matrix=embedding_matrix, word_list=word_list)
+        self.embedding.weight.requires_grad = emb_layer_trainable
+
+    def load_zhao2018(self, embedding_type):
+        assert embedding_type in self.ZHAO2018_PATHS, f"Unsupported embedding_type: {embedding_type}"
+        glove_path = self.ZHAO2018_PATHS[embedding_type]
 
         with open(glove_path, 'r') as f:
             lines = f.readlines()
@@ -121,5 +131,12 @@ class GloveLikeEmbeddingLayer(EmbeddingLayer):
 
         word_list = np.array(word_list)
         embedding_matrix = np.array(embedding_matrix, dtype=np.float)
-        super().__init__(embedding_matrix=embedding_matrix, word_list=word_list)
-        self.embedding.weight.requires_grad = emb_layer_trainable
+        return embedding_matrix, word_list
+
+    def load_glove200(self):
+        glove_path = utils.download_if_needed(GloveEmbeddingLayer.EMBEDDING_PATH)
+        glove_word_list_path = os.path.join(glove_path, "glove.wordlist.npy")
+        word_list = np.load(glove_word_list_path)
+        glove_matrix_path = os.path.join(glove_path, "glove.6B.200d.mat.npy")
+        embedding_matrix = np.load(glove_matrix_path)
+        return embedding_matrix, word_list

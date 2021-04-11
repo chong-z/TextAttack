@@ -17,7 +17,7 @@ class WordCNNForClassification(nn.Module):
 
     def __init__(
         self,
-        use_gn=False,
+        embedding_type="glove200",
         hidden_size=150,
         dropout=0.3,
         num_labels=2,
@@ -27,7 +27,7 @@ class WordCNNForClassification(nn.Module):
     ):
         super().__init__()
         self.drop = nn.Dropout(dropout)
-        self.emb_layer = GloveLikeEmbeddingLayer(use_gn=use_gn, emb_layer_trainable=emb_layer_trainable)
+        self.emb_layer = GloveLikeEmbeddingLayer(embedding_type=embedding_type, emb_layer_trainable=emb_layer_trainable)
         self.word2id = self.emb_layer.word2id
         self.encoder = CNNTextLayer(
             self.emb_layer.n_d, widths=[3, 4, 5], filters=hidden_size

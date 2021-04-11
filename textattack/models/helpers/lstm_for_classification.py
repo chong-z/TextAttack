@@ -16,7 +16,7 @@ class LSTMForClassification(nn.Module):
 
     def __init__(
         self,
-        use_gn=False,
+        embedding_type="glove200",
         hidden_size=150,
         depth=1,
         dropout=0.3,
@@ -33,7 +33,7 @@ class LSTMForClassification(nn.Module):
             dropout = 0
         self.drop = nn.Dropout(dropout)
         self.emb_layer_trainable = emb_layer_trainable
-        self.emb_layer = GloveLikeEmbeddingLayer(use_gn=use_gn, emb_layer_trainable=emb_layer_trainable)
+        self.emb_layer = GloveLikeEmbeddingLayer(embedding_type=embedding_type, emb_layer_trainable=emb_layer_trainable)
         self.word2id = self.emb_layer.word2id
         self.encoder = nn.LSTM(
             input_size=self.emb_layer.n_d,

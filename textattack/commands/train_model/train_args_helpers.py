@@ -97,10 +97,10 @@ def model_from_args(train_args, num_labels, model_path=None):
     model).
     """
     if train_args.model in ["lstm", "gn-lstm"]:
-        use_gn = 'gn' in train_args.model
+        embedding_type = "zhao2018-gn" if 'gn' in train_args.model else "zhao2018"
         textattack.shared.logger.info("Loading textattack model: LSTMForClassification")
         model = textattack.models.helpers.LSTMForClassification(
-            use_gn=use_gn,
+            embedding_type=embedding_type,
             max_seq_length=train_args.max_length,
             num_labels=num_labels,
             emb_layer_trainable=False,
@@ -108,12 +108,12 @@ def model_from_args(train_args, num_labels, model_path=None):
         if model_path:
             model.load_from_disk(model_path)
     elif train_args.model in ["cnn", 'gn-cnn']:
-        use_gn = 'gn' in train_args.model
+        embedding_type = "zhao2018-gn" if 'gn' in train_args.model else "zhao2018"
         textattack.shared.logger.info(
             "Loading textattack model: WordCNNForClassification"
         )
         model = textattack.models.helpers.WordCNNForClassification(
-            use_gn=use_gn,
+            embedding_type=embedding_type,
             max_seq_length=train_args.max_length,
             num_labels=num_labels,
             emb_layer_trainable=False,
