@@ -1,5 +1,5 @@
 import torch
-from transformers.modeling_bert import BertForSequenceClassification
+from transformers import BertForSequenceClassification
 
 from textattack.models.tokenizers import BERTTokenizer
 from textattack.shared import utils
